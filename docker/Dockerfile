@@ -8,7 +8,8 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LANG=zh_CN.UTF-8 \
     SHELL=/bin/bash \
     PS1="\u@\h:\w \$ " \
-    JD_DIR=/jd
+    JD_DIR=/jd \
+    DOCKER_ENTRYPOINT=/usr/local/bin/docker-entrypoint.sh
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
     && apk update -f \
     && apk upgrade \
@@ -25,15 +26,16 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && rm -rf /var/cache/apk/* \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
+    && npm install -g npm \
+    && npm install -g pm2 \
     && git clone -b ${JD_BASE_BRANCH} ${JD_BASE_URL} ${JD_DIR} \
     && cd ${JD_DIR}/panel \
     && npm install \
     && git clone -b ${JD_SCRIPTS_BRANCH} ${JD_SCRIPTS_URL} ${JD_DIR}/scripts \
     && cd ${JD_DIR}/scripts \
     && npm install \
-    && npm install -g pm2 \
-    && ln -sf ${JD_DIR}/docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh \
-    && chmod 777 ${JD_DIR}/docker/docker-entrypoint.sh \
+    && cp -f ${JD_DIR}/docker/docker-entrypoint.sh ${DOCKER_ENTRYPOINT} \
+    && chmod 777 ${DOCKER_ENTRYPOINT} \
     && rm -rf /root/.npm
 WORKDIR ${JD_DIR}
 ENTRYPOINT docker-entrypoint.sh

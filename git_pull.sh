@@ -49,6 +49,14 @@ function Git_PullScripts {
   echo
 }
 
+## 更新 docker-entrypoint
+function Update_Entrypoint {
+  if [[ $(cat ${ShellDir}/docker/docker-entrypoint.sh) != $(cat ${DOCKER_ENTRYPOINT}) ]]; then
+    cp -f ${ShellDir}/docker/docker-entrypoint.sh ${DOCKER_ENTRYPOINT}
+    chmod +x ${DOCKER_ENTRYPOINT}
+  fi
+}
+
 ## 获取用户数量 UserSum
 function Count_UserSum {
   i=1
@@ -272,7 +280,7 @@ VerConfSample=$(grep " Version: " ${FileConfSample} | perl -pe "s|.+v((\d+\.?){3
 [ -f ${FileConf} ] && VerConf=$(grep " Version: " ${FileConf} | perl -pe "s|.+v((\d+\.?){3})|\1|")
 if [ ${ExitStatusShell} -eq 0 ]; then
   chmod +x ${ShellDir}/*sh
-  chmod +x ${ShellDir}/docker/*sh
+  [[ ${DOCKER_ENTRYPOINT} ]] && Update_Entrypoint
   echo -e "\njd-base 更新完成\n"
 else
   echo -e "\njd-base 更新失败，请检查原因后再次运行 git_pull.sh，或等待定时任务自动再次运行 git_pull.sh\n"
